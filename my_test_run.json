@@ -1,0 +1,954 @@
+{
+  "title": "PentAudit Security Assessment Report",
+  "subtitle": "Autonomous Pentest Platform & AI Security Tool Audit",
+  "author": "Divesh Gupta",
+  "date": "May 28, 2026",
+  "timestamp": "2026-05-28T17:53:56.395606",
+  "target": null,
+  "scan_mode": "demo",
+  "platforms": [
+    {
+      "host": "10.0.5.50",
+      "port": 8443,
+      "platform": "PenTera",
+      "url": "https://10.0.5.50:8443",
+      "confidence": "high",
+      "status": "identified",
+      "discovered_at": "2026-05-28T17:53:56.065647"
+    },
+    {
+      "host": "10.0.5.55",
+      "port": 443,
+      "platform": "NodeZero",
+      "url": "https://10.0.5.55:443",
+      "confidence": "high",
+      "status": "identified",
+      "discovered_at": "2026-05-28T17:53:56.065668"
+    },
+    {
+      "host": "10.0.3.20",
+      "port": 443,
+      "platform": "Darktrace",
+      "url": "https://10.0.3.20:443",
+      "confidence": "medium",
+      "status": "identified",
+      "discovered_at": "2026-05-28T17:53:56.065670"
+    },
+    {
+      "host": "10.0.3.25",
+      "port": 8443,
+      "platform": "Exabeam",
+      "url": "https://10.0.3.25:8443",
+      "confidence": "medium",
+      "status": "identified",
+      "discovered_at": "2026-05-28T17:53:56.065672"
+    },
+    {
+      "host": "10.0.8.10",
+      "port": 8834,
+      "platform": "Nessus",
+      "url": "https://10.0.8.10:8834",
+      "confidence": "high",
+      "status": "identified",
+      "discovered_at": "2026-05-28T17:53:56.065674"
+    }
+  ],
+  "findings": [
+    {
+      "check_id": "CHK-001",
+      "title": "Dashboard Requires Authentication",
+      "risk_level": "INFO",
+      "platform_name": "PenTera",
+      "platform_host": "10.0.5.50",
+      "platform_url": "https://10.0.5.50:8443",
+      "description": "The PenTera dashboard requires login credentials.",
+      "evidence": "HTTP GET https://10.0.5.50:8443 \u2192 302 Redirect to login page",
+      "mitre_technique": "T1078",
+      "mitre_details": {
+        "name": "Valid Accounts",
+        "tactic": "Initial Access / Persistence",
+        "url": "https://attack.mitre.org/techniques/T1078/",
+        "description": "Adversary uses legitimate credentials to access systems."
+      },
+      "remediation": "No action needed. Ensure authentication remains enforced.",
+      "nist_control": "AC-3 (Access Enforcement)",
+      "timestamp": "2026-05-28T17:53:56.120172"
+    },
+    {
+      "check_id": "CHK-002",
+      "title": "Default Credentials Accepted",
+      "risk_level": "CRITICAL",
+      "platform_name": "PenTera",
+      "platform_host": "10.0.5.50",
+      "platform_url": "https://10.0.5.50:8443",
+      "description": "The PenTera platform accepted default credentials (admin / changeme). An insider with knowledge of common default passwords can access all pentest results including harvested credentials and attack paths.",
+      "evidence": "POST https://10.0.5.50:8443/api/login with admin / changeme \u2192 200 OK (authenticated)",
+      "mitre_technique": "T1078.001",
+      "mitre_details": {
+        "name": "Valid Accounts: Default Accounts",
+        "tactic": "Initial Access",
+        "url": "https://attack.mitre.org/techniques/T1078/001/",
+        "description": "Adversary uses default vendor credentials."
+      },
+      "remediation": "Change all default credentials immediately. Implement a password policy requiring minimum 16 characters. Enable account lockout after 5 failed attempts.",
+      "nist_control": "IA-5 (Authenticator Management)",
+      "timestamp": "2026-05-28T17:53:56.122387"
+    },
+    {
+      "check_id": "CHK-003",
+      "title": "Multi-Factor Authentication Not Enforced",
+      "risk_level": "HIGH",
+      "platform_name": "PenTera",
+      "platform_host": "10.0.5.50",
+      "platform_url": "https://10.0.5.50:8443",
+      "description": "The PenTera login page does not enforce multi-factor authentication. An insider who obtains or guesses valid credentials can access all pentest results without additional verification.",
+      "evidence": "Login page at https://10.0.5.50:8443/login shows no MFA prompt or TOTP field",
+      "mitre_technique": "T1078",
+      "mitre_details": {
+        "name": "Valid Accounts",
+        "tactic": "Initial Access / Persistence",
+        "url": "https://attack.mitre.org/techniques/T1078/",
+        "description": "Adversary uses legitimate credentials to access systems."
+      },
+      "remediation": "Enable MFA for all accounts. Prefer hardware tokens (FIDO2/YubiKey) or TOTP authenticator apps. SMS-based MFA is better than nothing but vulnerable to SIM swapping.",
+      "nist_control": "IA-2(1) (Multi-Factor Authentication to Privileged Accounts)",
+      "timestamp": "2026-05-28T17:53:56.126673"
+    },
+    {
+      "check_id": "CHK-004",
+      "title": "API Endpoints Accessible Without Authentication",
+      "risk_level": "CRITICAL",
+      "platform_name": "PenTera",
+      "platform_host": "10.0.5.50",
+      "platform_url": "https://10.0.5.50:8443",
+      "description": "The PenTera REST API at https://10.0.5.50:8443/api returned scan data without requiring an API key or authentication token. An insider can programmatically extract all credentials and attack paths.",
+      "evidence": "GET https://10.0.5.50:8443/api/scans \u2192 200 OK (returned JSON with scan data)\nGET https://10.0.5.50:8443/api/credentials \u2192 200 OK (returned harvested credentials)",
+      "mitre_technique": "T1106",
+      "mitre_details": {
+        "name": "Native API",
+        "tactic": "Execution",
+        "url": "https://attack.mitre.org/techniques/T1106/",
+        "description": "Adversary interacts with native OS or platform APIs."
+      },
+      "remediation": "Require API key or OAuth token for all API endpoints. Implement rate limiting. Log all API access with source IP and account identity.",
+      "nist_control": "AC-3 (Access Enforcement), SC-8 (Transmission Confidentiality)",
+      "timestamp": "2026-05-28T17:53:56.131806"
+    },
+    {
+      "check_id": "CHK-005",
+      "title": "Pentest Reports Found on Accessible File Shares",
+      "risk_level": "HIGH",
+      "platform_name": "PenTera",
+      "platform_host": "10.0.5.50",
+      "platform_url": "https://10.0.5.50:8443",
+      "description": "Exported PenTera reports were found on network file shares accessible to standard domain users. Reports contain harvested credentials, vulnerability details, and validated attack paths.",
+      "evidence": "Found files:\n  \\\\fileserver\\security$\\pentest-results-Q1-2026.pdf (readable)\n  \\\\fileserver\\security$\\nodezero-credentials-export.csv (readable)\n  \\\\fileserver\\it-share\\pentera-scan-march.xlsx (readable)",
+      "mitre_technique": "T1039",
+      "mitre_details": {
+        "name": "Data from Network Shared Drive",
+        "tactic": "Collection",
+        "url": "https://attack.mitre.org/techniques/T1039/",
+        "description": "Adversary collects data from shared network drives."
+      },
+      "remediation": "Remove all exported reports from shared drives. Keep results only in the platform's access-controlled dashboard. If exports are necessary, use encrypted files with time-limited access and watermarking.",
+      "nist_control": "AC-6 (Least Privilege), MP-4 (Media Storage)",
+      "timestamp": "2026-05-28T17:53:56.134633"
+    },
+    {
+      "check_id": "CHK-006",
+      "title": "Platform Likely Whitelisted in UEBA/NTA \u2014 Monitoring Blind Spot",
+      "risk_level": "HIGH",
+      "platform_name": "PenTera",
+      "platform_host": "10.0.5.50",
+      "platform_url": "https://10.0.5.50:8443",
+      "description": "The PenTera platform at 10.0.5.50 is likely whitelisted in UEBA/NTA exclusion lists to prevent false positives during scheduled scans. If this whitelist is permanent, any insider activity targeting the platform (accessing results, downloading reports) will be invisible to AI-based detection.",
+      "evidence": "Platform IP 10.0.5.50 identified as active pentest tool. Standard practice is to whitelist during scans. Check UEBA exclusion lists for this IP and associated service accounts.",
+      "mitre_technique": "T1562.001",
+      "mitre_details": {
+        "name": "Impair Defenses: Disable or Modify Tools",
+        "tactic": "Defense Evasion",
+        "url": "https://attack.mitre.org/techniques/T1562/001/",
+        "description": "Adversary disables or modifies security tools to avoid detection."
+      },
+      "remediation": "Time-box UEBA/NTA whitelists: automate entries to activate only during scheduled scan windows and expire immediately after. Between scans, all pentest platform traffic should be monitored. Create a manual alert rule for any access outside authorized users.",
+      "nist_control": "SI-4 (System Monitoring), AU-6 (Audit Record Review)",
+      "timestamp": "2026-05-28T17:53:56.137270"
+    },
+    {
+      "check_id": "CHK-007",
+      "title": "Weak Session Management Detected",
+      "risk_level": "MEDIUM",
+      "platform_name": "PenTera",
+      "platform_host": "10.0.5.50",
+      "platform_url": "https://10.0.5.50:8443",
+      "description": "The PenTera dashboard session does not appear to enforce automatic timeout. Sessions may remain active indefinitely, increasing the risk of session hijacking by insiders.",
+      "evidence": "Session cookie from https://10.0.5.50:8443 lacks 'Max-Age' or 'Expires' attributes. No idle timeout detected after 30-minute test.",
+      "mitre_technique": "T1539",
+      "mitre_details": {
+        "name": "Steal Web Session Cookie",
+        "tactic": "Credential Access",
+        "url": "https://attack.mitre.org/techniques/T1539/",
+        "description": "Adversary steals session cookies for unauthorized access."
+      },
+      "remediation": "Configure session timeout to 15 minutes of inactivity. Set cookie attributes: Secure, HttpOnly, SameSite=Strict. Implement server-side session invalidation on logout.",
+      "nist_control": "AC-12 (Session Termination), SC-23 (Session Authenticity)",
+      "timestamp": "2026-05-28T17:53:56.141658"
+    },
+    {
+      "check_id": "CHK-008",
+      "title": "Harvested Credentials Stored \u2014 Rotation Policy Missing",
+      "risk_level": "HIGH",
+      "platform_name": "PenTera",
+      "platform_host": "10.0.5.50",
+      "platform_url": "https://10.0.5.50:8443",
+      "description": "The PenTera platform stores credentials harvested during automated pentest scans (NTLM hashes, Kerberos tickets, plaintext passwords, API tokens). If these are not rotated after each engagement, an insider who accesses the results has working credentials for lateral movement.",
+      "evidence": "Platform type: Autonomous Pentest Tool (stores harvested credentials by design)\nCredential rotation policy: Not detected / Unknown\nEncryption at rest: Unknown \u2014 manual verification required",
+      "mitre_technique": "T1552",
+      "mitre_details": {
+        "name": "Unsecured Credentials",
+        "tactic": "Credential Access",
+        "url": "https://attack.mitre.org/techniques/T1552/",
+        "description": "Adversary finds credentials stored insecurely."
+      },
+      "remediation": "Implement mandatory credential rotation after every pentest engagement. Force-reset all credentials discovered by the platform. Ensure credential data is encrypted at rest (AES-256 minimum). Set auto-purge policies to delete harvested credentials after 30 days.",
+      "nist_control": "IA-5 (Authenticator Management), SC-28 (Protection of Information at Rest)",
+      "timestamp": "2026-05-28T17:53:56.145268"
+    },
+    {
+      "check_id": "CHK-001",
+      "title": "Dashboard Requires Authentication",
+      "risk_level": "INFO",
+      "platform_name": "NodeZero",
+      "platform_host": "10.0.5.55",
+      "platform_url": "https://10.0.5.55:443",
+      "description": "The NodeZero dashboard requires login credentials.",
+      "evidence": "HTTP GET https://10.0.5.55:443 \u2192 302 Redirect to login page",
+      "mitre_technique": "T1078",
+      "mitre_details": {
+        "name": "Valid Accounts",
+        "tactic": "Initial Access / Persistence",
+        "url": "https://attack.mitre.org/techniques/T1078/",
+        "description": "Adversary uses legitimate credentials to access systems."
+      },
+      "remediation": "No action needed. Ensure authentication remains enforced.",
+      "nist_control": "AC-3 (Access Enforcement)",
+      "timestamp": "2026-05-28T17:53:56.148300"
+    },
+    {
+      "check_id": "CHK-002",
+      "title": "Default Credentials Rejected",
+      "risk_level": "INFO",
+      "platform_name": "NodeZero",
+      "platform_host": "10.0.5.55",
+      "platform_url": "https://10.0.5.55:443",
+      "description": "Default credentials were not accepted by NodeZero.",
+      "evidence": "Tested 11 default credential pairs \u2014 all rejected",
+      "mitre_technique": "T1078.001",
+      "mitre_details": {
+        "name": "Valid Accounts: Default Accounts",
+        "tactic": "Initial Access",
+        "url": "https://attack.mitre.org/techniques/T1078/001/",
+        "description": "Adversary uses default vendor credentials."
+      },
+      "remediation": "No action needed. Continue to enforce strong password policies.",
+      "nist_control": "IA-5",
+      "timestamp": "2026-05-28T17:53:56.150354"
+    },
+    {
+      "check_id": "CHK-003",
+      "title": "Multi-Factor Authentication Not Enforced",
+      "risk_level": "HIGH",
+      "platform_name": "NodeZero",
+      "platform_host": "10.0.5.55",
+      "platform_url": "https://10.0.5.55:443",
+      "description": "The NodeZero login page does not enforce multi-factor authentication. An insider who obtains or guesses valid credentials can access all pentest results without additional verification.",
+      "evidence": "Login page at https://10.0.5.55:443/login shows no MFA prompt or TOTP field",
+      "mitre_technique": "T1078",
+      "mitre_details": {
+        "name": "Valid Accounts",
+        "tactic": "Initial Access / Persistence",
+        "url": "https://attack.mitre.org/techniques/T1078/",
+        "description": "Adversary uses legitimate credentials to access systems."
+      },
+      "remediation": "Enable MFA for all accounts. Prefer hardware tokens (FIDO2/YubiKey) or TOTP authenticator apps. SMS-based MFA is better than nothing but vulnerable to SIM swapping.",
+      "nist_control": "IA-2(1) (Multi-Factor Authentication to Privileged Accounts)",
+      "timestamp": "2026-05-28T17:53:56.152287"
+    },
+    {
+      "check_id": "CHK-004",
+      "title": "API Endpoints Accessible Without Authentication",
+      "risk_level": "CRITICAL",
+      "platform_name": "NodeZero",
+      "platform_host": "10.0.5.55",
+      "platform_url": "https://10.0.5.55:443",
+      "description": "The NodeZero REST API at https://10.0.5.55:443/api returned scan data without requiring an API key or authentication token. An insider can programmatically extract all credentials and attack paths.",
+      "evidence": "GET https://10.0.5.55:443/api/scans \u2192 200 OK (returned JSON with scan data)\nGET https://10.0.5.55:443/api/credentials \u2192 200 OK (returned harvested credentials)",
+      "mitre_technique": "T1106",
+      "mitre_details": {
+        "name": "Native API",
+        "tactic": "Execution",
+        "url": "https://attack.mitre.org/techniques/T1106/",
+        "description": "Adversary interacts with native OS or platform APIs."
+      },
+      "remediation": "Require API key or OAuth token for all API endpoints. Implement rate limiting. Log all API access with source IP and account identity.",
+      "nist_control": "AC-3 (Access Enforcement), SC-8 (Transmission Confidentiality)",
+      "timestamp": "2026-05-28T17:53:56.156879"
+    },
+    {
+      "check_id": "CHK-005",
+      "title": "Pentest Reports Found on Accessible File Shares",
+      "risk_level": "HIGH",
+      "platform_name": "NodeZero",
+      "platform_host": "10.0.5.55",
+      "platform_url": "https://10.0.5.55:443",
+      "description": "Exported NodeZero reports were found on network file shares accessible to standard domain users. Reports contain harvested credentials, vulnerability details, and validated attack paths.",
+      "evidence": "Found files:\n  \\\\fileserver\\security$\\pentest-results-Q1-2026.pdf (readable)\n  \\\\fileserver\\security$\\nodezero-credentials-export.csv (readable)\n  \\\\fileserver\\it-share\\pentera-scan-march.xlsx (readable)",
+      "mitre_technique": "T1039",
+      "mitre_details": {
+        "name": "Data from Network Shared Drive",
+        "tactic": "Collection",
+        "url": "https://attack.mitre.org/techniques/T1039/",
+        "description": "Adversary collects data from shared network drives."
+      },
+      "remediation": "Remove all exported reports from shared drives. Keep results only in the platform's access-controlled dashboard. If exports are necessary, use encrypted files with time-limited access and watermarking.",
+      "nist_control": "AC-6 (Least Privilege), MP-4 (Media Storage)",
+      "timestamp": "2026-05-28T17:53:56.159778"
+    },
+    {
+      "check_id": "CHK-006",
+      "title": "Platform Likely Whitelisted in UEBA/NTA \u2014 Monitoring Blind Spot",
+      "risk_level": "HIGH",
+      "platform_name": "NodeZero",
+      "platform_host": "10.0.5.55",
+      "platform_url": "https://10.0.5.55:443",
+      "description": "The NodeZero platform at 10.0.5.55 is likely whitelisted in UEBA/NTA exclusion lists to prevent false positives during scheduled scans. If this whitelist is permanent, any insider activity targeting the platform (accessing results, downloading reports) will be invisible to AI-based detection.",
+      "evidence": "Platform IP 10.0.5.55 identified as active pentest tool. Standard practice is to whitelist during scans. Check UEBA exclusion lists for this IP and associated service accounts.",
+      "mitre_technique": "T1562.001",
+      "mitre_details": {
+        "name": "Impair Defenses: Disable or Modify Tools",
+        "tactic": "Defense Evasion",
+        "url": "https://attack.mitre.org/techniques/T1562/001/",
+        "description": "Adversary disables or modifies security tools to avoid detection."
+      },
+      "remediation": "Time-box UEBA/NTA whitelists: automate entries to activate only during scheduled scan windows and expire immediately after. Between scans, all pentest platform traffic should be monitored. Create a manual alert rule for any access outside authorized users.",
+      "nist_control": "SI-4 (System Monitoring), AU-6 (Audit Record Review)",
+      "timestamp": "2026-05-28T17:53:56.162396"
+    },
+    {
+      "check_id": "CHK-007",
+      "title": "Session Management Appears Adequate",
+      "risk_level": "LOW",
+      "platform_name": "NodeZero",
+      "platform_host": "10.0.5.55",
+      "platform_url": "https://10.0.5.55:443",
+      "description": "Session cookies from NodeZero include expiration attributes.",
+      "evidence": "Cookie includes Max-Age and Secure flags",
+      "mitre_technique": "T1539",
+      "mitre_details": {
+        "name": "Steal Web Session Cookie",
+        "tactic": "Credential Access",
+        "url": "https://attack.mitre.org/techniques/T1539/",
+        "description": "Adversary steals session cookies for unauthorized access."
+      },
+      "remediation": "Continue enforcing session expiration policies.",
+      "nist_control": "AC-12",
+      "timestamp": "2026-05-28T17:53:56.164534"
+    },
+    {
+      "check_id": "CHK-008",
+      "title": "Harvested Credentials Stored \u2014 Rotation Policy Missing",
+      "risk_level": "HIGH",
+      "platform_name": "NodeZero",
+      "platform_host": "10.0.5.55",
+      "platform_url": "https://10.0.5.55:443",
+      "description": "The NodeZero platform stores credentials harvested during automated pentest scans (NTLM hashes, Kerberos tickets, plaintext passwords, API tokens). If these are not rotated after each engagement, an insider who accesses the results has working credentials for lateral movement.",
+      "evidence": "Platform type: Autonomous Pentest Tool (stores harvested credentials by design)\nCredential rotation policy: Not detected / Unknown\nEncryption at rest: Unknown \u2014 manual verification required",
+      "mitre_technique": "T1552",
+      "mitre_details": {
+        "name": "Unsecured Credentials",
+        "tactic": "Credential Access",
+        "url": "https://attack.mitre.org/techniques/T1552/",
+        "description": "Adversary finds credentials stored insecurely."
+      },
+      "remediation": "Implement mandatory credential rotation after every pentest engagement. Force-reset all credentials discovered by the platform. Ensure credential data is encrypted at rest (AES-256 minimum). Set auto-purge policies to delete harvested credentials after 30 days.",
+      "nist_control": "IA-5 (Authenticator Management), SC-28 (Protection of Information at Rest)",
+      "timestamp": "2026-05-28T17:53:56.166824"
+    },
+    {
+      "check_id": "CHK-001",
+      "title": "Dashboard Requires Authentication",
+      "risk_level": "INFO",
+      "platform_name": "Darktrace",
+      "platform_host": "10.0.3.20",
+      "platform_url": "https://10.0.3.20:443",
+      "description": "The Darktrace dashboard requires login credentials.",
+      "evidence": "HTTP GET https://10.0.3.20:443 \u2192 302 Redirect to login page",
+      "mitre_technique": "T1078",
+      "mitre_details": {
+        "name": "Valid Accounts",
+        "tactic": "Initial Access / Persistence",
+        "url": "https://attack.mitre.org/techniques/T1078/",
+        "description": "Adversary uses legitimate credentials to access systems."
+      },
+      "remediation": "No action needed. Ensure authentication remains enforced.",
+      "nist_control": "AC-3 (Access Enforcement)",
+      "timestamp": "2026-05-28T17:53:56.173409"
+    },
+    {
+      "check_id": "CHK-002",
+      "title": "Default Credentials Rejected",
+      "risk_level": "INFO",
+      "platform_name": "Darktrace",
+      "platform_host": "10.0.3.20",
+      "platform_url": "https://10.0.3.20:443",
+      "description": "Default credentials were not accepted by Darktrace.",
+      "evidence": "Tested 11 default credential pairs \u2014 all rejected",
+      "mitre_technique": "T1078.001",
+      "mitre_details": {
+        "name": "Valid Accounts: Default Accounts",
+        "tactic": "Initial Access",
+        "url": "https://attack.mitre.org/techniques/T1078/001/",
+        "description": "Adversary uses default vendor credentials."
+      },
+      "remediation": "No action needed. Continue to enforce strong password policies.",
+      "nist_control": "IA-5",
+      "timestamp": "2026-05-28T17:53:56.175907"
+    },
+    {
+      "check_id": "CHK-003",
+      "title": "MFA Enforcement Status Unknown",
+      "risk_level": "MEDIUM",
+      "platform_name": "Darktrace",
+      "platform_host": "10.0.3.20",
+      "platform_url": "https://10.0.3.20:443",
+      "description": "Could not determine MFA status for Darktrace.",
+      "evidence": "Manual verification required \u2014 check platform settings",
+      "mitre_technique": "T1078",
+      "mitre_details": {
+        "name": "Valid Accounts",
+        "tactic": "Initial Access / Persistence",
+        "url": "https://attack.mitre.org/techniques/T1078/",
+        "description": "Adversary uses legitimate credentials to access systems."
+      },
+      "remediation": "Verify MFA is enabled in platform administration settings.",
+      "nist_control": "IA-2(1)",
+      "timestamp": "2026-05-28T17:53:56.178492"
+    },
+    {
+      "check_id": "CHK-004",
+      "title": "API Endpoints Require Authentication",
+      "risk_level": "INFO",
+      "platform_name": "Darktrace",
+      "platform_host": "10.0.3.20",
+      "platform_url": "https://10.0.3.20:443",
+      "description": "API endpoints on Darktrace returned 401/403 without credentials.",
+      "evidence": "Tested 10 common API paths \u2014 all require authentication",
+      "mitre_technique": "T1106",
+      "mitre_details": {
+        "name": "Native API",
+        "tactic": "Execution",
+        "url": "https://attack.mitre.org/techniques/T1106/",
+        "description": "Adversary interacts with native OS or platform APIs."
+      },
+      "remediation": "No action needed. Ensure API authentication remains enforced.",
+      "nist_control": "AC-3",
+      "timestamp": "2026-05-28T17:53:56.180475"
+    },
+    {
+      "check_id": "CHK-005",
+      "title": "No Exposed Reports Found for This Platform",
+      "risk_level": "INFO",
+      "platform_name": "Darktrace",
+      "platform_host": "10.0.3.20",
+      "platform_url": "https://10.0.3.20:443",
+      "description": "No exported reports found on accessible shares for Darktrace.",
+      "evidence": "Searched common file share paths \u2014 no matching reports found",
+      "mitre_technique": "T1039",
+      "mitre_details": {
+        "name": "Data from Network Shared Drive",
+        "tactic": "Collection",
+        "url": "https://attack.mitre.org/techniques/T1039/",
+        "description": "Adversary collects data from shared network drives."
+      },
+      "remediation": "Continue restricting report exports.",
+      "nist_control": "AC-6",
+      "timestamp": "2026-05-28T17:53:56.182447"
+    },
+    {
+      "check_id": "CHK-006",
+      "title": "AI Security Platform \u2014 Whitelist Status Unknown",
+      "risk_level": "MEDIUM",
+      "platform_name": "Darktrace",
+      "platform_host": "10.0.3.20",
+      "platform_url": "https://10.0.3.20:443",
+      "description": "Darktrace is an AI security tool. Verify it is not creating monitoring blind spots for itself.",
+      "evidence": "Manual review of UEBA/NTA exclusion lists required",
+      "mitre_technique": "T1562.001",
+      "mitre_details": {
+        "name": "Impair Defenses: Disable or Modify Tools",
+        "tactic": "Defense Evasion",
+        "url": "https://attack.mitre.org/techniques/T1562/001/",
+        "description": "Adversary disables or modifies security tools to avoid detection."
+      },
+      "remediation": "Review UEBA exclusion lists for this platform's IP and service accounts.",
+      "nist_control": "SI-4",
+      "timestamp": "2026-05-28T17:53:56.184632"
+    },
+    {
+      "check_id": "CHK-007",
+      "title": "Session Management Appears Adequate",
+      "risk_level": "LOW",
+      "platform_name": "Darktrace",
+      "platform_host": "10.0.3.20",
+      "platform_url": "https://10.0.3.20:443",
+      "description": "Session cookies from Darktrace include expiration attributes.",
+      "evidence": "Cookie includes Max-Age and Secure flags",
+      "mitre_technique": "T1539",
+      "mitre_details": {
+        "name": "Steal Web Session Cookie",
+        "tactic": "Credential Access",
+        "url": "https://attack.mitre.org/techniques/T1539/",
+        "description": "Adversary steals session cookies for unauthorized access."
+      },
+      "remediation": "Continue enforcing session expiration policies.",
+      "nist_control": "AC-12",
+      "timestamp": "2026-05-28T17:53:56.192303"
+    },
+    {
+      "check_id": "CHK-008",
+      "title": "AI Security Tool \u2014 Credential Storage Not Applicable",
+      "risk_level": "INFO",
+      "platform_name": "Darktrace",
+      "platform_host": "10.0.3.20",
+      "platform_url": "https://10.0.3.20:443",
+      "description": "Darktrace is a detection tool, not a pentest platform. Credential storage check not applicable.",
+      "evidence": "Platform type: AI Security/Detection Tool",
+      "mitre_technique": "T1552",
+      "mitre_details": {
+        "name": "Unsecured Credentials",
+        "tactic": "Credential Access",
+        "url": "https://attack.mitre.org/techniques/T1552/",
+        "description": "Adversary finds credentials stored insecurely."
+      },
+      "remediation": "Ensure platform service account credentials are stored securely.",
+      "nist_control": "SC-28",
+      "timestamp": "2026-05-28T17:53:56.195278"
+    },
+    {
+      "check_id": "CHK-001",
+      "title": "Dashboard Requires Authentication",
+      "risk_level": "INFO",
+      "platform_name": "Exabeam",
+      "platform_host": "10.0.3.25",
+      "platform_url": "https://10.0.3.25:8443",
+      "description": "The Exabeam dashboard requires login credentials.",
+      "evidence": "HTTP GET https://10.0.3.25:8443 \u2192 302 Redirect to login page",
+      "mitre_technique": "T1078",
+      "mitre_details": {
+        "name": "Valid Accounts",
+        "tactic": "Initial Access / Persistence",
+        "url": "https://attack.mitre.org/techniques/T1078/",
+        "description": "Adversary uses legitimate credentials to access systems."
+      },
+      "remediation": "No action needed. Ensure authentication remains enforced.",
+      "nist_control": "AC-3 (Access Enforcement)",
+      "timestamp": "2026-05-28T17:53:56.199236"
+    },
+    {
+      "check_id": "CHK-002",
+      "title": "Default Credentials Rejected",
+      "risk_level": "INFO",
+      "platform_name": "Exabeam",
+      "platform_host": "10.0.3.25",
+      "platform_url": "https://10.0.3.25:8443",
+      "description": "Default credentials were not accepted by Exabeam.",
+      "evidence": "Tested 11 default credential pairs \u2014 all rejected",
+      "mitre_technique": "T1078.001",
+      "mitre_details": {
+        "name": "Valid Accounts: Default Accounts",
+        "tactic": "Initial Access",
+        "url": "https://attack.mitre.org/techniques/T1078/001/",
+        "description": "Adversary uses default vendor credentials."
+      },
+      "remediation": "No action needed. Continue to enforce strong password policies.",
+      "nist_control": "IA-5",
+      "timestamp": "2026-05-28T17:53:56.202826"
+    },
+    {
+      "check_id": "CHK-003",
+      "title": "MFA Enforcement Status Unknown",
+      "risk_level": "MEDIUM",
+      "platform_name": "Exabeam",
+      "platform_host": "10.0.3.25",
+      "platform_url": "https://10.0.3.25:8443",
+      "description": "Could not determine MFA status for Exabeam.",
+      "evidence": "Manual verification required \u2014 check platform settings",
+      "mitre_technique": "T1078",
+      "mitre_details": {
+        "name": "Valid Accounts",
+        "tactic": "Initial Access / Persistence",
+        "url": "https://attack.mitre.org/techniques/T1078/",
+        "description": "Adversary uses legitimate credentials to access systems."
+      },
+      "remediation": "Verify MFA is enabled in platform administration settings.",
+      "nist_control": "IA-2(1)",
+      "timestamp": "2026-05-28T17:53:56.207342"
+    },
+    {
+      "check_id": "CHK-004",
+      "title": "API Endpoints Require Authentication",
+      "risk_level": "INFO",
+      "platform_name": "Exabeam",
+      "platform_host": "10.0.3.25",
+      "platform_url": "https://10.0.3.25:8443",
+      "description": "API endpoints on Exabeam returned 401/403 without credentials.",
+      "evidence": "Tested 10 common API paths \u2014 all require authentication",
+      "mitre_technique": "T1106",
+      "mitre_details": {
+        "name": "Native API",
+        "tactic": "Execution",
+        "url": "https://attack.mitre.org/techniques/T1106/",
+        "description": "Adversary interacts with native OS or platform APIs."
+      },
+      "remediation": "No action needed. Ensure API authentication remains enforced.",
+      "nist_control": "AC-3",
+      "timestamp": "2026-05-28T17:53:56.209880"
+    },
+    {
+      "check_id": "CHK-005",
+      "title": "No Exposed Reports Found for This Platform",
+      "risk_level": "INFO",
+      "platform_name": "Exabeam",
+      "platform_host": "10.0.3.25",
+      "platform_url": "https://10.0.3.25:8443",
+      "description": "No exported reports found on accessible shares for Exabeam.",
+      "evidence": "Searched common file share paths \u2014 no matching reports found",
+      "mitre_technique": "T1039",
+      "mitre_details": {
+        "name": "Data from Network Shared Drive",
+        "tactic": "Collection",
+        "url": "https://attack.mitre.org/techniques/T1039/",
+        "description": "Adversary collects data from shared network drives."
+      },
+      "remediation": "Continue restricting report exports.",
+      "nist_control": "AC-6",
+      "timestamp": "2026-05-28T17:53:56.211958"
+    },
+    {
+      "check_id": "CHK-006",
+      "title": "AI Security Platform \u2014 Whitelist Status Unknown",
+      "risk_level": "MEDIUM",
+      "platform_name": "Exabeam",
+      "platform_host": "10.0.3.25",
+      "platform_url": "https://10.0.3.25:8443",
+      "description": "Exabeam is an AI security tool. Verify it is not creating monitoring blind spots for itself.",
+      "evidence": "Manual review of UEBA/NTA exclusion lists required",
+      "mitre_technique": "T1562.001",
+      "mitre_details": {
+        "name": "Impair Defenses: Disable or Modify Tools",
+        "tactic": "Defense Evasion",
+        "url": "https://attack.mitre.org/techniques/T1562/001/",
+        "description": "Adversary disables or modifies security tools to avoid detection."
+      },
+      "remediation": "Review UEBA exclusion lists for this platform's IP and service accounts.",
+      "nist_control": "SI-4",
+      "timestamp": "2026-05-28T17:53:56.214197"
+    },
+    {
+      "check_id": "CHK-007",
+      "title": "Session Management Appears Adequate",
+      "risk_level": "LOW",
+      "platform_name": "Exabeam",
+      "platform_host": "10.0.3.25",
+      "platform_url": "https://10.0.3.25:8443",
+      "description": "Session cookies from Exabeam include expiration attributes.",
+      "evidence": "Cookie includes Max-Age and Secure flags",
+      "mitre_technique": "T1539",
+      "mitre_details": {
+        "name": "Steal Web Session Cookie",
+        "tactic": "Credential Access",
+        "url": "https://attack.mitre.org/techniques/T1539/",
+        "description": "Adversary steals session cookies for unauthorized access."
+      },
+      "remediation": "Continue enforcing session expiration policies.",
+      "nist_control": "AC-12",
+      "timestamp": "2026-05-28T17:53:56.216271"
+    },
+    {
+      "check_id": "CHK-008",
+      "title": "AI Security Tool \u2014 Credential Storage Not Applicable",
+      "risk_level": "INFO",
+      "platform_name": "Exabeam",
+      "platform_host": "10.0.3.25",
+      "platform_url": "https://10.0.3.25:8443",
+      "description": "Exabeam is a detection tool, not a pentest platform. Credential storage check not applicable.",
+      "evidence": "Platform type: AI Security/Detection Tool",
+      "mitre_technique": "T1552",
+      "mitre_details": {
+        "name": "Unsecured Credentials",
+        "tactic": "Credential Access",
+        "url": "https://attack.mitre.org/techniques/T1552/",
+        "description": "Adversary finds credentials stored insecurely."
+      },
+      "remediation": "Ensure platform service account credentials are stored securely.",
+      "nist_control": "SC-28",
+      "timestamp": "2026-05-28T17:53:56.221003"
+    },
+    {
+      "check_id": "CHK-001",
+      "title": "Dashboard Accessible Without Authentication",
+      "risk_level": "CRITICAL",
+      "platform_name": "Nessus",
+      "platform_host": "10.0.8.10",
+      "platform_url": "https://10.0.8.10:8834",
+      "description": "The Nessus dashboard at https://10.0.8.10:8834 returned content without requiring authentication. Any user on the internal network can access scan results, harvested credentials, and validated attack paths.",
+      "evidence": "HTTP GET https://10.0.8.10:8834 \u2192 200 OK (no login redirect)",
+      "mitre_technique": "T1078",
+      "mitre_details": {
+        "name": "Valid Accounts",
+        "tactic": "Initial Access / Persistence",
+        "url": "https://attack.mitre.org/techniques/T1078/",
+        "description": "Adversary uses legitimate credentials to access systems."
+      },
+      "remediation": "Enable authentication immediately. Configure role-based access control (RBAC) with individual accounts. Never use shared credentials.",
+      "nist_control": "AC-3 (Access Enforcement), IA-2 (Identification and Authentication)",
+      "timestamp": "2026-05-28T17:53:56.224234"
+    },
+    {
+      "check_id": "CHK-002",
+      "title": "Default Credentials Accepted",
+      "risk_level": "CRITICAL",
+      "platform_name": "Nessus",
+      "platform_host": "10.0.8.10",
+      "platform_url": "https://10.0.8.10:8834",
+      "description": "The Nessus platform accepted default credentials (admin / admin). An insider with knowledge of common default passwords can access all pentest results including harvested credentials and attack paths.",
+      "evidence": "POST https://10.0.8.10:8834/api/login with admin / admin \u2192 200 OK (authenticated)",
+      "mitre_technique": "T1078.001",
+      "mitre_details": {
+        "name": "Valid Accounts: Default Accounts",
+        "tactic": "Initial Access",
+        "url": "https://attack.mitre.org/techniques/T1078/001/",
+        "description": "Adversary uses default vendor credentials."
+      },
+      "remediation": "Change all default credentials immediately. Implement a password policy requiring minimum 16 characters. Enable account lockout after 5 failed attempts.",
+      "nist_control": "IA-5 (Authenticator Management)",
+      "timestamp": "2026-05-28T17:53:56.226305"
+    },
+    {
+      "check_id": "CHK-003",
+      "title": "Multi-Factor Authentication Not Enforced",
+      "risk_level": "HIGH",
+      "platform_name": "Nessus",
+      "platform_host": "10.0.8.10",
+      "platform_url": "https://10.0.8.10:8834",
+      "description": "The Nessus login page does not enforce multi-factor authentication. An insider who obtains or guesses valid credentials can access all pentest results without additional verification.",
+      "evidence": "Login page at https://10.0.8.10:8834/login shows no MFA prompt or TOTP field",
+      "mitre_technique": "T1078",
+      "mitre_details": {
+        "name": "Valid Accounts",
+        "tactic": "Initial Access / Persistence",
+        "url": "https://attack.mitre.org/techniques/T1078/",
+        "description": "Adversary uses legitimate credentials to access systems."
+      },
+      "remediation": "Enable MFA for all accounts. Prefer hardware tokens (FIDO2/YubiKey) or TOTP authenticator apps. SMS-based MFA is better than nothing but vulnerable to SIM swapping.",
+      "nist_control": "IA-2(1) (Multi-Factor Authentication to Privileged Accounts)",
+      "timestamp": "2026-05-28T17:53:56.228313"
+    },
+    {
+      "check_id": "CHK-004",
+      "title": "API Endpoints Require Authentication",
+      "risk_level": "INFO",
+      "platform_name": "Nessus",
+      "platform_host": "10.0.8.10",
+      "platform_url": "https://10.0.8.10:8834",
+      "description": "API endpoints on Nessus returned 401/403 without credentials.",
+      "evidence": "Tested 10 common API paths \u2014 all require authentication",
+      "mitre_technique": "T1106",
+      "mitre_details": {
+        "name": "Native API",
+        "tactic": "Execution",
+        "url": "https://attack.mitre.org/techniques/T1106/",
+        "description": "Adversary interacts with native OS or platform APIs."
+      },
+      "remediation": "No action needed. Ensure API authentication remains enforced.",
+      "nist_control": "AC-3",
+      "timestamp": "2026-05-28T17:53:56.230365"
+    },
+    {
+      "check_id": "CHK-005",
+      "title": "No Exposed Reports Found for This Platform",
+      "risk_level": "INFO",
+      "platform_name": "Nessus",
+      "platform_host": "10.0.8.10",
+      "platform_url": "https://10.0.8.10:8834",
+      "description": "No exported reports found on accessible shares for Nessus.",
+      "evidence": "Searched common file share paths \u2014 no matching reports found",
+      "mitre_technique": "T1039",
+      "mitre_details": {
+        "name": "Data from Network Shared Drive",
+        "tactic": "Collection",
+        "url": "https://attack.mitre.org/techniques/T1039/",
+        "description": "Adversary collects data from shared network drives."
+      },
+      "remediation": "Continue restricting report exports.",
+      "nist_control": "AC-6",
+      "timestamp": "2026-05-28T17:53:56.232367"
+    },
+    {
+      "check_id": "CHK-006",
+      "title": "Platform Likely Whitelisted in UEBA/NTA \u2014 Monitoring Blind Spot",
+      "risk_level": "HIGH",
+      "platform_name": "Nessus",
+      "platform_host": "10.0.8.10",
+      "platform_url": "https://10.0.8.10:8834",
+      "description": "The Nessus platform at 10.0.8.10 is likely whitelisted in UEBA/NTA exclusion lists to prevent false positives during scheduled scans. If this whitelist is permanent, any insider activity targeting the platform (accessing results, downloading reports) will be invisible to AI-based detection.",
+      "evidence": "Platform IP 10.0.8.10 identified as active pentest tool. Standard practice is to whitelist during scans. Check UEBA exclusion lists for this IP and associated service accounts.",
+      "mitre_technique": "T1562.001",
+      "mitre_details": {
+        "name": "Impair Defenses: Disable or Modify Tools",
+        "tactic": "Defense Evasion",
+        "url": "https://attack.mitre.org/techniques/T1562/001/",
+        "description": "Adversary disables or modifies security tools to avoid detection."
+      },
+      "remediation": "Time-box UEBA/NTA whitelists: automate entries to activate only during scheduled scan windows and expire immediately after. Between scans, all pentest platform traffic should be monitored. Create a manual alert rule for any access outside authorized users.",
+      "nist_control": "SI-4 (System Monitoring), AU-6 (Audit Record Review)",
+      "timestamp": "2026-05-28T17:53:56.237555"
+    },
+    {
+      "check_id": "CHK-007",
+      "title": "Weak Session Management Detected",
+      "risk_level": "MEDIUM",
+      "platform_name": "Nessus",
+      "platform_host": "10.0.8.10",
+      "platform_url": "https://10.0.8.10:8834",
+      "description": "The Nessus dashboard session does not appear to enforce automatic timeout. Sessions may remain active indefinitely, increasing the risk of session hijacking by insiders.",
+      "evidence": "Session cookie from https://10.0.8.10:8834 lacks 'Max-Age' or 'Expires' attributes. No idle timeout detected after 30-minute test.",
+      "mitre_technique": "T1539",
+      "mitre_details": {
+        "name": "Steal Web Session Cookie",
+        "tactic": "Credential Access",
+        "url": "https://attack.mitre.org/techniques/T1539/",
+        "description": "Adversary steals session cookies for unauthorized access."
+      },
+      "remediation": "Configure session timeout to 15 minutes of inactivity. Set cookie attributes: Secure, HttpOnly, SameSite=Strict. Implement server-side session invalidation on logout.",
+      "nist_control": "AC-12 (Session Termination), SC-23 (Session Authenticity)",
+      "timestamp": "2026-05-28T17:53:56.240486"
+    },
+    {
+      "check_id": "CHK-008",
+      "title": "Harvested Credentials Stored \u2014 Rotation Policy Missing",
+      "risk_level": "HIGH",
+      "platform_name": "Nessus",
+      "platform_host": "10.0.8.10",
+      "platform_url": "https://10.0.8.10:8834",
+      "description": "The Nessus platform stores credentials harvested during automated pentest scans (NTLM hashes, Kerberos tickets, plaintext passwords, API tokens). If these are not rotated after each engagement, an insider who accesses the results has working credentials for lateral movement.",
+      "evidence": "Platform type: Autonomous Pentest Tool (stores harvested credentials by design)\nCredential rotation policy: Not detected / Unknown\nEncryption at rest: Unknown \u2014 manual verification required",
+      "mitre_technique": "T1552",
+      "mitre_details": {
+        "name": "Unsecured Credentials",
+        "tactic": "Credential Access",
+        "url": "https://attack.mitre.org/techniques/T1552/",
+        "description": "Adversary finds credentials stored insecurely."
+      },
+      "remediation": "Implement mandatory credential rotation after every pentest engagement. Force-reset all credentials discovered by the platform. Ensure credential data is encrypted at rest (AES-256 minimum). Set auto-purge policies to delete harvested credentials after 30 days.",
+      "nist_control": "IA-5 (Authenticator Management), SC-28 (Protection of Information at Rest)",
+      "timestamp": "2026-05-28T17:53:56.242865"
+    }
+  ],
+  "stats": {
+    "total_findings": 40,
+    "total_platforms": 5,
+    "critical": 5,
+    "high": 11,
+    "medium": 6,
+    "low": 3,
+    "info": 15,
+    "overall_risk": "CRITICAL",
+    "mitre_techniques_covered": [
+      "T1539",
+      "T1562.001",
+      "T1106",
+      "T1078.001",
+      "T1039",
+      "T1078",
+      "T1552"
+    ]
+  },
+  "risk_levels": {
+    "CRITICAL": {
+      "score": 4,
+      "color": "#DC3545",
+      "description": "Immediate exploitation possible \u2014 fix now"
+    },
+    "HIGH": {
+      "score": 3,
+      "color": "#FD7E14",
+      "description": "Easily exploitable with minimal skill \u2014 fix within 24 hours"
+    },
+    "MEDIUM": {
+      "score": 2,
+      "color": "#FFC107",
+      "description": "Exploitable under certain conditions \u2014 fix within 1 week"
+    },
+    "LOW": {
+      "score": 1,
+      "color": "#28A745",
+      "description": "Minor risk, defense-in-depth improvement \u2014 fix within 1 month"
+    },
+    "INFO": {
+      "score": 0,
+      "color": "#17A2B8",
+      "description": "Informational finding \u2014 no immediate risk"
+    }
+  },
+  "mitre_techniques": {
+    "T1078": {
+      "name": "Valid Accounts",
+      "tactic": "Initial Access / Persistence",
+      "url": "https://attack.mitre.org/techniques/T1078/",
+      "description": "Adversary uses legitimate credentials to access systems."
+    },
+    "T1078.001": {
+      "name": "Valid Accounts: Default Accounts",
+      "tactic": "Initial Access",
+      "url": "https://attack.mitre.org/techniques/T1078/001/",
+      "description": "Adversary uses default vendor credentials."
+    },
+    "T1106": {
+      "name": "Native API",
+      "tactic": "Execution",
+      "url": "https://attack.mitre.org/techniques/T1106/",
+      "description": "Adversary interacts with native OS or platform APIs."
+    },
+    "T1039": {
+      "name": "Data from Network Shared Drive",
+      "tactic": "Collection",
+      "url": "https://attack.mitre.org/techniques/T1039/",
+      "description": "Adversary collects data from shared network drives."
+    },
+    "T1562.001": {
+      "name": "Impair Defenses: Disable or Modify Tools",
+      "tactic": "Defense Evasion",
+      "url": "https://attack.mitre.org/techniques/T1562/001/",
+      "description": "Adversary disables or modifies security tools to avoid detection."
+    },
+    "T1539": {
+      "name": "Steal Web Session Cookie",
+      "tactic": "Credential Access",
+      "url": "https://attack.mitre.org/techniques/T1539/",
+      "description": "Adversary steals session cookies for unauthorized access."
+    },
+    "T1552": {
+      "name": "Unsecured Credentials",
+      "tactic": "Credential Access",
+      "url": "https://attack.mitre.org/techniques/T1552/",
+      "description": "Adversary finds credentials stored insecurely."
+    },
+    "T1083": {
+      "name": "File and Directory Discovery",
+      "tactic": "Discovery",
+      "url": "https://attack.mitre.org/techniques/T1083/",
+      "description": "Adversary enumerates files and directories for sensitive data."
+    }
+  }
+}

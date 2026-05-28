@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+        :root {
+            --bg-dark: #080710;
+            --card-bg: rgba(25, 24, 38, 0.65);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            
+            /* Risk Colors */
+            --color-critical: #ff3355;
+            --color-high: #ff7722;
+            --color-medium: #ffcc00;
+            --color-low: #00cc66;
+            --color-info: #00bbee;
+            
+            --critical-glow: rgba(255, 51, 85, 0.15);
+            --high-glow: rgba(255, 119, 34, 0.15);
+            --medium-glow: rgba(255, 204, 0, 0.1);
+            --low-glow: rgba(0, 204, 102, 0.1);
+            --info-glow: rgba(0, 187, 238, 0.1);
+            
+            --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(at 10% 10%, rgba(255, 51, 85, 0.05) 0px, transparent 50%),
+                radial-gradient(at 90% 90%, rgba(0, 187, 238, 0.05) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* --- Header Styles --- */
+        header {
+            background: linear-gradient(135deg, rgba(30, 27, 50, 0.8), rgba(13, 11, 23, 0.9));
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 40px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(12px);
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--color-critical), var(--color-high), var(--color-info));
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header-left h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(120deg, #fff 40%, var(--text-muted) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .header-left p {
+            color: var(--color-critical);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+        }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            margin-top: 25px;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .meta-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .meta-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .overall-risk-badge {
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            display: inline-block;
+        }
+
+        /* --- Stats grid --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .stats-grid > :last-child {
+                grid-column: span 2;
+            }
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+        }
+
+        .stat-card.critical::after { background-color: var(--color-critical); }
+        .stat-card.high::after { background-color: var(--color-high); }
+        .stat-card.medium::after { background-color: var(--color-medium); }
+        .stat-card.low::after { background-color: var(--color-low); }
+        .stat-card.info::after { background-color: var(--color-info); }
+
+        .stat-card .count {
+            font-size: 2.25rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 5px;
+            font-family: var(--font-mono);
+        }
+
+        .stat-card.critical .count { color: var(--color-critical); }
+        .stat-card.high .count { color: var(--color-high); }
+        .stat-card.medium .count { color: var(--color-medium); }
+        .stat-card.low .count { color: var(--color-low); }
+        .stat-card.info .count { color: var(--color-info); }
+
+        .stat-card .label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+        }
+
+        /* --- Section Titles --- */
+        section {
+            margin-bottom: 40px;
+        }
+
+        section h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.3px;
+        }
+
+        section h2::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 20px;
+            background: var(--color-critical);
+            border-radius: 4px;
+        }
+
+        /* --- Discovered Platforms Table --- */
+        .table-container {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(8px);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.03);
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        td {
+            padding: 16px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            font-size: 0.95rem;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .platform-badge {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .confidence-high { color: var(--color-low); font-weight: 600; }
+        .confidence-medium { color: var(--color-medium); font-weight: 600; }
+        .confidence-low { color: var(--color-high); font-weight: 600; }
+
+        .url-link {
+            color: var(--color-info);
+            text-decoration: none;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+        }
+
+        .url-link:hover {
+            text-decoration: underline;
+        }
+
+        /* --- Detailed Findings --- */
+        .finding-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            margin-bottom: 20px;
+            padding: 30px;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .finding-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 5px;
+        }
+
+        .finding-card.critical::before { background-color: var(--color-critical); }
+        .finding-card.high::before { background-color: var(--color-high); }
+        .finding-card.medium::before { background-color: var(--color-medium); }
+        .finding-card.low::before { background-color: var(--color-low); }
+        .finding-card.info::before { background-color: var(--color-info); }
+
+        .finding-card.critical { box-shadow: 0 10px 30px var(--critical-glow); }
+        .finding-card.high { box-shadow: 0 10px 30px var(--high-glow); }
+        .finding-card.medium { box-shadow: 0 10px 30px var(--medium-glow); }
+        .finding-card.low { box-shadow: 0 10px 30px var(--low-glow); }
+        .finding-card.info { box-shadow: 0 10px 30px var(--info-glow); }
+
+        .finding-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .finding-id-badge {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .risk-pill {
+            padding: 4px 14px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .risk-pill.critical { background: var(--color-critical); color: #fff; }
+        .risk-pill.high { background: var(--color-high); color: #fff; }
+        .risk-pill.medium { background: var(--color-medium); color: #000; }
+        .risk-pill.low { background: var(--color-low); color: #fff; }
+        .risk-pill.info { background: var(--color-info); color: #fff; }
+
+        .finding-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #ffffff;
+            letter-spacing: -0.3px;
+        }
+
+        .finding-meta-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            font-size: 0.85rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            padding-bottom: 15px;
+        }
+
+        .finding-meta-item {
+            color: var(--text-muted);
+        }
+
+        .finding-meta-item strong {
+            color: var(--text-main);
+        }
+
+        .finding-description {
+            font-size: 0.95rem;
+            color: #d1d5db;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .evidence-box {
+            background: #0b0a14;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 20px;
+        }
+
+        .evidence-box h4 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .evidence-box pre {
+            margin: 0;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--color-info);
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .remediation-box {
+            background: rgba(0, 204, 102, 0.04);
+            border: 1px solid rgba(0, 204, 102, 0.15);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 20px;
+        }
+
+        .remediation-box h4 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--color-low);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .remediation-box p {
+            font-size: 0.95rem;
+            color: #e5e7eb;
+        }
+
+        .frameworks-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .framework-badge {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .framework-badge span.label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+        }
+
+        .framework-badge span.val {
+            font-weight: 600;
+            color: #ffffff;
+            margin-top: 2px;
+        }
+
+        .framework-badge a {
+            color: var(--color-info);
+            text-decoration: none;
+        }
+
+        .framework-badge a:hover {
+            text-decoration: underline;
+        }
+
+        /* --- Footer --- */
+        footer {
+            margin-top: 50px;
+            text-align: center;
+            border-top: 1px solid var(--card-border);
+            padding-top: 30px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        footer p {
+            margin-bottom: 6px;
+        }
+
+        footer a {
+            color: var(--color-info);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="header-left">
+                    <p>{{ subtitle }}</p>
+                    <h1>{{ title }}</h1>
+                </div>
+                <div>
+                    {% set risk = stats.overall_risk %}
+                    {% if risk == 'CRITICAL' %}
+                        <div class="overall-risk-badge" style="background-color: var(--color-critical); color: #fff;">
+                            OVERALL: {{ risk }}
+                        </div>
+                    {% elif risk == 'HIGH' %}
+                        <div class="overall-risk-badge" style="background-color: var(--color-high); color: #fff;">
+                            OVERALL: {{ risk }}
+                        </div>
+                    {% elif risk == 'MEDIUM' %}
+                        <div class="overall-risk-badge" style="background-color: var(--color-medium); color: #000;">
+                            OVERALL: {{ risk }}
+                        </div>
+                    {% else %}
+                        <div class="overall-risk-badge" style="background-color: var(--color-low); color: #fff;">
+                            OVERALL: {{ risk }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="meta-grid">
+                <div class="meta-item">
+                    <span class="meta-label">Target Range</span>
+                    <span class="meta-value">{{ target }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Assessment Date</span>
+                    <span class="meta-value">{{ date }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Discovered Platforms</span>
+                    <span class="meta-value">{{ stats.total_platforms }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Lead Auditor</span>
+                    <span class="meta-value">{{ author }}</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card critical">
+                <div class="count">{{ stats.critical }}</div>
+                <div class="label">Critical</div>
+            </div>
+            <div class="stat-card high">
+                <div class="count">{{ stats.high }}</div>
+                <div class="label">High</div>
+            </div>
+            <div class="stat-card medium">
+                <div class="count">{{ stats.medium }}</div>
+                <div class="label">Medium</div>
+            </div>
+            <div class="stat-card low">
+                <div class="count">{{ stats.low }}</div>
+                <div class="label">Low</div>
+            </div>
+            <div class="stat-card info">
+                <div class="count">{{ stats.info }}</div>
+                <div class="label">Info</div>
+            </div>
+        </div>
+
+        <!-- Discovered Platforms Section -->
+        <section>
+            <h2>Discovered Platform Inventory</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Host Address</th>
+                            <th>Port Checked</th>
+                            <th>Identified Platform</th>
+                            <th>Signature Confidence</th>
+                            <th>Access URL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if platforms %}
+                            {% for platform in platforms %}
+                                <tr>
+                                    <td><strong>{{ platform.host }}</strong></td>
+                                    <td><span style="font-family: var(--font-mono); font-size: 0.85rem;">{{ platform.port }}</span></td>
+                                    <td><span class="platform-badge">{{ platform.platform }}</span></td>
+                                    <td>
+                                        <span class="confidence-{{ platform.confidence }}">
+                                            {{ platform.confidence|upper }}
+                                        </span>
+                                    </td>
+                                    <td><a href="{{ platform.url }}" target="_blank" class="url-link">{{ platform.url }}</a></td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                                    No pentest platforms discovered.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Detailed Findings Section -->
+        <section>
+            <h2>Detailed Assessment Findings</h2>
+            
+            {% if findings %}
+                {% for finding in findings %}
+                    <div class="finding-card {{ finding.risk_level|lower }}">
+                        <div class="finding-top">
+                            <span class="finding-id-badge">{{ finding.check_id }}</span>
+                            <span class="risk-pill {{ finding.risk_level|lower }}">{{ finding.risk_level }}</span>
+                        </div>
+                        <h3 class="finding-title">{{ finding.title }}</h3>
+                        
+                        <div class="finding-meta-row">
+                            <div class="finding-meta-item">Platform: <strong>{{ finding.platform_name }}</strong></div>
+                            <div class="finding-meta-item">Host: <strong>{{ finding.platform_host }}</strong></div>
+                            <div class="finding-meta-item">URL: <strong>{{ finding.platform_url }}</strong></div>
+                        </div>
+                        
+                        <div class="finding-description">
+                            {{ finding.description }}
+                        </div>
+                        
+                        <div class="evidence-box">
+                            <h4>Technical Evidence & Proof of Concept</h4>
+                            <pre>{{ finding.evidence }}</pre>
+                        </div>
+                        
+                        <div class="remediation-box">
+                            <h4>🛡️ Remediation Plan</h4>
+                            <p>{{ finding.remediation }}</p>
+                        </div>
+                        
+                        <div class="frameworks-row">
+                            <div class="framework-badge">
+                                <span class="label">MITRE ATT&CK</span>
+                                <span class="val">
+                                    {% if finding.mitre_details %}
+                                        <a href="{{ finding.mitre_details.url }}" target="_blank">
+                                            {{ finding.mitre_technique }} — {{ finding.mitre_details.name }}
+                                        </a>
+                                    {% else %}
+                                        {{ finding.mitre_technique }}
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="framework-badge">
+                                <span class="label">NIST SP 800-53</span>
+                                <span class="val">{{ finding.nist_control }}</span>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; padding: 40px; text-align: center; color: var(--text-muted);">
+                    No findings were identified during the security audit. Excellent work!
+                </div>
+            {% endif %}
+        </section>
+
+        <footer>
+            <p>Generated by <strong>PentAudit Security Tool v1.0.0</strong></p>
+            <p>Author: <strong>{{ author }}</strong> | Bridging Offensive & Defensive Security</p>
+            <p style="font-size: 0.75rem; opacity: 0.5; margin-top: 15px;">
+                CONFIDENTIAL — STRICTLY FOR INTERNAL SECURITY USE ONLY
+            </p>
+        </footer>
+    </div>
+</body>
+</html>
