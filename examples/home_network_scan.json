@@ -1,0 +1,216 @@
+{
+  "title": "PentAudit Security Assessment Report",
+  "subtitle": "Autonomous Pentest Platform & AI Security Tool Audit",
+  "author": "Divesh Gupta",
+  "date": "May 28, 2026",
+  "timestamp": "2026-05-28T18:26:28.490827",
+  "target": "192.168.1.0/24",
+  "scan_mode": "active_scan",
+  "platforms": [
+    {
+      "host": "192.168.1.1",
+      "port": 443,
+      "platform": "Unknown",
+      "url": "https://192.168.1.1:443",
+      "confidence": "none",
+      "status": "unidentified",
+      "discovered_at": "2026-05-28T18:26:27.812412"
+    }
+  ],
+  "findings": [
+    {
+      "check_id": "CHK-002",
+      "title": "Default Credential Check Completed",
+      "risk_level": "INFO",
+      "platform_name": "Unknown",
+      "platform_host": "192.168.1.1",
+      "platform_url": "https://192.168.1.1:443",
+      "description": "Default credential testing requires platform-specific login endpoints.",
+      "evidence": "Tested against 11 known defaults",
+      "mitre_technique": "T1078.001",
+      "mitre_details": {
+        "name": "Valid Accounts: Default Accounts",
+        "tactic": "Initial Access",
+        "url": "https://attack.mitre.org/techniques/T1078/001/",
+        "description": "Adversary uses default vendor credentials."
+      },
+      "remediation": "Manually verify default credentials have been changed.",
+      "nist_control": "IA-5",
+      "timestamp": "2026-05-28T18:26:27.899137"
+    },
+    {
+      "check_id": "CHK-004",
+      "title": "API Endpoints Secured",
+      "risk_level": "INFO",
+      "platform_name": "Unknown",
+      "platform_host": "192.168.1.1",
+      "platform_url": "https://192.168.1.1:443",
+      "description": "All tested API endpoints require authentication.",
+      "evidence": "Tested 10 paths",
+      "mitre_technique": "T1106",
+      "mitre_details": {
+        "name": "Native API",
+        "tactic": "Execution",
+        "url": "https://attack.mitre.org/techniques/T1106/",
+        "description": "Adversary interacts with native OS or platform APIs."
+      },
+      "remediation": "No action needed.",
+      "nist_control": "AC-3",
+      "timestamp": "2026-05-28T18:26:28.358670"
+    },
+    {
+      "check_id": "CHK-005",
+      "title": "Report File Permissions Check \u2014 Manual Verification Required",
+      "risk_level": "MEDIUM",
+      "platform_name": "Unknown",
+      "platform_host": "192.168.1.1",
+      "platform_url": "https://192.168.1.1:443",
+      "description": "Automated file share scanning requires domain credentials and SMB access.",
+      "evidence": "Manual check recommended: search \\\\fileserver shares for pentest reports",
+      "mitre_technique": "T1039",
+      "mitre_details": {
+        "name": "Data from Network Shared Drive",
+        "tactic": "Collection",
+        "url": "https://attack.mitre.org/techniques/T1039/",
+        "description": "Adversary collects data from shared network drives."
+      },
+      "remediation": "Audit file share permissions for any exported pentest reports.",
+      "nist_control": "AC-6, MP-4",
+      "timestamp": "2026-05-28T18:26:28.366452"
+    },
+    {
+      "check_id": "CHK-006",
+      "title": "Platform Likely Whitelisted in UEBA/NTA \u2014 Monitoring Blind Spot",
+      "risk_level": "HIGH",
+      "platform_name": "Unknown",
+      "platform_host": "192.168.1.1",
+      "platform_url": "https://192.168.1.1:443",
+      "description": "Pentest platform Unknown detected at 192.168.1.1. Recommend reviewing UEBA/NTA exclusion lists for permanent whitelisting.",
+      "evidence": "Automated UEBA config review not possible \u2014 manual check required",
+      "mitre_technique": "T1562.001",
+      "mitre_details": {
+        "name": "Impair Defenses: Disable or Modify Tools",
+        "tactic": "Defense Evasion",
+        "url": "https://attack.mitre.org/techniques/T1562/001/",
+        "description": "Adversary disables or modifies security tools to avoid detection."
+      },
+      "remediation": "Time-box whitelists. Create deterministic alert rules for platform access.",
+      "nist_control": "SI-4, AU-6",
+      "timestamp": "2026-05-28T18:26:28.372563"
+    },
+    {
+      "check_id": "CHK-008",
+      "title": "Harvested Credentials Stored \u2014 Rotation Policy Missing",
+      "risk_level": "HIGH",
+      "platform_name": "Unknown",
+      "platform_host": "192.168.1.1",
+      "platform_url": "https://192.168.1.1:443",
+      "description": "Autonomous pentest platform detected. By design, it stores harvested credentials. Verify encryption at rest and credential rotation policy.",
+      "evidence": "Manual review of credential storage and rotation policies required",
+      "mitre_technique": "T1552",
+      "mitre_details": {
+        "name": "Unsecured Credentials",
+        "tactic": "Credential Access",
+        "url": "https://attack.mitre.org/techniques/T1552/",
+        "description": "Adversary finds credentials stored insecurely."
+      },
+      "remediation": "Rotate all discovered credentials after each scan. Encrypt at rest.",
+      "nist_control": "IA-5, SC-28",
+      "timestamp": "2026-05-28T18:26:28.433040"
+    }
+  ],
+  "stats": {
+    "total_findings": 5,
+    "total_platforms": 1,
+    "critical": 0,
+    "high": 2,
+    "medium": 1,
+    "low": 0,
+    "info": 2,
+    "overall_risk": "HIGH",
+    "mitre_techniques_covered": [
+      "T1039",
+      "T1078.001",
+      "T1562.001",
+      "T1552",
+      "T1106"
+    ]
+  },
+  "risk_levels": {
+    "CRITICAL": {
+      "score": 4,
+      "color": "#DC3545",
+      "description": "Immediate exploitation possible \u2014 fix now"
+    },
+    "HIGH": {
+      "score": 3,
+      "color": "#FD7E14",
+      "description": "Easily exploitable with minimal skill \u2014 fix within 24 hours"
+    },
+    "MEDIUM": {
+      "score": 2,
+      "color": "#FFC107",
+      "description": "Exploitable under certain conditions \u2014 fix within 1 week"
+    },
+    "LOW": {
+      "score": 1,
+      "color": "#28A745",
+      "description": "Minor risk, defense-in-depth improvement \u2014 fix within 1 month"
+    },
+    "INFO": {
+      "score": 0,
+      "color": "#17A2B8",
+      "description": "Informational finding \u2014 no immediate risk"
+    }
+  },
+  "mitre_techniques": {
+    "T1078": {
+      "name": "Valid Accounts",
+      "tactic": "Initial Access / Persistence",
+      "url": "https://attack.mitre.org/techniques/T1078/",
+      "description": "Adversary uses legitimate credentials to access systems."
+    },
+    "T1078.001": {
+      "name": "Valid Accounts: Default Accounts",
+      "tactic": "Initial Access",
+      "url": "https://attack.mitre.org/techniques/T1078/001/",
+      "description": "Adversary uses default vendor credentials."
+    },
+    "T1106": {
+      "name": "Native API",
+      "tactic": "Execution",
+      "url": "https://attack.mitre.org/techniques/T1106/",
+      "description": "Adversary interacts with native OS or platform APIs."
+    },
+    "T1039": {
+      "name": "Data from Network Shared Drive",
+      "tactic": "Collection",
+      "url": "https://attack.mitre.org/techniques/T1039/",
+      "description": "Adversary collects data from shared network drives."
+    },
+    "T1562.001": {
+      "name": "Impair Defenses: Disable or Modify Tools",
+      "tactic": "Defense Evasion",
+      "url": "https://attack.mitre.org/techniques/T1562/001/",
+      "description": "Adversary disables or modifies security tools to avoid detection."
+    },
+    "T1539": {
+      "name": "Steal Web Session Cookie",
+      "tactic": "Credential Access",
+      "url": "https://attack.mitre.org/techniques/T1539/",
+      "description": "Adversary steals session cookies for unauthorized access."
+    },
+    "T1552": {
+      "name": "Unsecured Credentials",
+      "tactic": "Credential Access",
+      "url": "https://attack.mitre.org/techniques/T1552/",
+      "description": "Adversary finds credentials stored insecurely."
+    },
+    "T1083": {
+      "name": "File and Directory Discovery",
+      "tactic": "Discovery",
+      "url": "https://attack.mitre.org/techniques/T1083/",
+      "description": "Adversary enumerates files and directories for sensitive data."
+    }
+  }
+}
