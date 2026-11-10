@@ -58,7 +58,7 @@ PentAudit generates high-fidelity, interactive reports designed to impress both 
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/pentaudit.git
+   git clone https://github.com/Divesh010/Pentaudit.git
    cd pentaudit
    ```
 
